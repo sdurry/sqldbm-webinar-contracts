@@ -1,0 +1,40 @@
+version: 2
+
+models:
+  - name: loyalty_points
+    description: client loyalty program with gold, silver, bronze status
+    config:
+      contract:
+        enforced: true
+    constraints:
+      - type: primary_key
+        columns:
+          - customer_id
+        name: PK_1
+      - type: foreign_key
+        columns:
+          - customer_id
+        expression: "{{ target.schema }}.stg_customer(customer_id)"
+        name: FK_20_1
+    columns:
+      - name: customer_id
+        data_type: number(38,0)
+        description: customer id from customer dimension
+        tests:
+          - not_null
+          - unique        
+        constraints:
+          - type: not_null
+      - name: medallion_level
+        data_type: varchar
+        description: 'loyalty tier: bronze, silver, or gold'
+        constraints:
+          - type: not_null
+        tests:
+          - accepted_values:
+              values: ['bronze', 'silver', 'gold']
+      - name: points_amount
+        data_type: integer
+        description: total points accumulated (total sales volume in USD / 10000)
+        constraints:
+          - type: not_null
