@@ -1,0 +1,93 @@
+version: 2
+
+models:
+  - name: stg_customer
+    description: staging layer for customers data
+    config:
+      contract:
+        enforced: true
+    constraints:
+      - type: primary_key
+        name: pk_customer
+        columns: [customer_id]
+    columns:
+      - name: customer_id
+        data_type: number(38,0)
+        description: primary key of the model
+        tests:
+          - unique
+          - not_null
+      - name: name
+        data_type: varchar
+        description: customer id
+      - name: address
+        data_type: varchar
+        description: address of the customer
+      - name: location_id
+        data_type: number(38,0)
+        description: foreign key to stg_tpch_nations
+      - name: phone
+        data_type: varchar(15)
+        description: phone number of the customer
+      - name: account_balance_usd
+        data_type: number(12,2)
+        description: total account balance from the customer
+      - name: market_segment
+        data_type: varchar(10)
+        description: market segment of the customer
+      - name: comment
+        data_type: varchar
+        description: 'varchar(117) COMMENT ''VARCHAR(117)'
+      - name: __load_date
+        data_type: date
+
+  - name: stg_sales_order
+    description: staging layer for orders data
+    config:
+      contract:
+        enforced: true
+    constraints:
+      - type: primary_key
+        name: pk_sales_order
+        columns: [sales_order_id]
+      - type: foreign_key
+        columns: [customer_id]
+        name: FK_SALES_ORDER_PLACED_BY_CUSTOMER
+        expression: "{{ target.schema }}.stg_customer(CUSTOMER_ID)"
+    columns:
+      - name: sales_order_id
+        data_type: number(38,0)
+        description: primary key of the model
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        data_type: number(38,0)
+        description: foreign key to stg_tpch_customers
+        tests:
+          - relationships:
+              to: ref('stg_customer')
+              field: customer_id
+      - name: order_status
+        data_type: varchar(1)
+        description: status of the order
+      - name: total_price_usd
+        data_type: number(12,2)
+        description: raw price
+      - name: order_date
+        data_type: date
+        description: date the order was made
+      - name: order_priority
+        data_type: varchar(15)
+        description: code associated with the order
+      - name: clerk
+        data_type: varchar(15)
+        description: id of the clerk
+      - name: ship_priority
+        data_type: number(38,0)
+        description: numeric representation of the shipping priority, zero being the default
+      - name: comment
+        data_type: varchar(79)
+        description: 'varchar(79) COMMENT ''VARCHAR(79)'
+      - name: __load_date
+        data_type: date
